@@ -1,0 +1,32 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "node": true
+  },
+  "extends": [
+    "plugin:@typescript-eslint/all",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+  ],
+  "globals": {
+    "Atomics": "readonly",
+    "SharedArrayBuffer": "readonly"
+  },
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2018,
+    "project": "./tsconfig.json"
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "no-magic-numbers": "off",
+    "@typescript-eslint/no-magic-numbers": "off",
+    "@typescript-eslint/no-extraneous-class": "off",
+    "@typescript-eslint/space-before-function-paren": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/no-untyped-public-signature": ["error", { "ignoredMethods": ["constructor"] }],
+    "sort-imports": "error"
+  }
+}
