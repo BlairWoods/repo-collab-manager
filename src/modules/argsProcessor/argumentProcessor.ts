@@ -25,7 +25,7 @@ export class ArgumentProcessor {
 
         if (process.argv.length === 0) {
             this.logger.logError("No params passed or incorrect params passed!");
-            throw "No params passed!";
+            throw new Error("No params passed!");
         }
 
         try {
@@ -38,10 +38,7 @@ export class ArgumentProcessor {
                 .option("-i --public", "Provides a list of public repositories.");
 
             const params: Params = program.parse(process.argv);
-            if (params.githubapi === undefined || params.username === undefined || params.password === undefined) {
-                this.logger.logError("Incorrect params passed!");
-                throw "Incorrect params passed!";
-            }
+            this.validateParams(params);
 
             this.logger.log(`Username: ${params.username}`, LogTypes.Debug);
             this.logger.log(`Password: ${this.maskParam(params.username)}`, LogTypes.Debug);
@@ -50,8 +47,26 @@ export class ArgumentProcessor {
             return this.mapParams(params);
 
         } catch (error) {
-            this.logger.logError(`There was a problem passing params: ${error}`);
-            throw error;
+            throw new Error(`There was a problem passing params: ${error}`);
+        }
+    }
+
+    private validateParams(params: Params): void {
+        const invalidFields: string[] = [];
+        if (params.githubapi === undefined) {
+            invalidFields.push("githubapi");
+        }
+
+        if (params.username === undefined) {
+            invalidFields.push("username");
+        }
+
+        if (params.password === undefined) {
+            invalidFields.push("password");
+        }
+
+        if (invalidFields.length > 0) {
+            throw new Error(`Incorrect params passed: ${invalidFields.join(", ")}`);
         }
     }
 

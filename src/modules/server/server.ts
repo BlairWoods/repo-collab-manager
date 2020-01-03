@@ -1,4 +1,4 @@
-import { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
+import { AxiosInstance, AxiosRequestConfig } from "axios";
 import { inject, injectable } from "inversify";
 import { LoggerInterface } from "../logger/loggerInterface";
 import { Types as LoggerTypes } from "../logger/types";
@@ -21,34 +21,38 @@ export class Server implements ServerInterface {
     }
 
     public async getFullRepoList(username: string, password: string, url: string): Promise<ServerResponse<Repository[]>> {
-        return await this.getRepoList(username, password, url, (responseData: Repository[]) => {
+        const repoList = await this.getRepoList(username, password, url, (responseData: Repository[]) => {
             return responseData;
         });
+
+        return repoList;
     }
 
     public async getPublicRepoList(username: string, password: string, url: string): Promise<ServerResponse<Repository[]>> {
-        return await this.getRepoList(username, password, url, (responseData: Repository[]) => {
+        const repoList = await this.getRepoList(username, password, url, (responseData: Repository[]) => {
             return responseData.filter((repo: Repository) => {
                 return !repo.private;
             });
         });
+
+        return repoList;
     }
 
     private async getRepoList(username: string, password: string, url: string, filter: (responseData: Repository[]) => Repository[]): Promise<ServerResponse<Repository[]>> {
-        let isError = false;
-        const repoList: Repository[] = await this.requestServer.get<Repository[]>("/user/repos", this.generateAxiosConfig(username, password, url)).then((resp: AxiosResponse<Repository[]>) => {
-            const data = filter(resp.data);
-            return data.length > 0 ? data : [];
-        }).catch((error: AxiosError) => {
+        try {
+            const repoListResponse = await this.requestServer.get<Repository[]>("/user/repos", this.generateAxiosConfig(username, password, url));
+            const data = filter(repoListResponse.data);
+            return {
+                isError: false,
+                content: data.length > 0 ? data : []
+            };
+        } catch (error) {
             this.logger.logError(error.message);
-            isError = true;
-            return [];
-        });
-
-        return {
-            isError: isError,
-            content: repoList
-        };
+            return {
+                isError: true,
+                content: []
+            };
+        }
     }
 
     private generateAxiosConfig(username: string, password: string, url: string): AxiosRequestConfig {
